@@ -159,6 +159,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
         document.getElementById("message").value = "";
     }, false);
 
+    document.getElementById("message").addEventListener("keyup", function(event){
+        if(event.keyCode == 13) {
+            document.getElementById("send-message").click();
+        }
+    }, false);
+
     /**
      *  Request a videocall the other user
      */
