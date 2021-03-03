@@ -1,0 +1,10 @@
+.visible {
+    visibility: visible;
+}
+.hidden {
+    visibility: hidden;
+}
+
+.video {
+    background: #212529;
+}

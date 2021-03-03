@@ -129,10 +129,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
             orientation = "text-right"
         }
 
-        var messageHTML =  '<a href="javascript:void(0);" class="list-group-item' + orientation + '">';
+        var messageHTML =  '<div href="javascript:void(0);" class="list-group-item' + orientation + '">';
                 messageHTML += '<h4 class="list-group-item-heading">'+ data.from +'</h4>';
                 messageHTML += '<p class="list-group-item-text">'+ data.text +'</p>';
-            messageHTML += '</a>';
+            messageHTML += '</div>';
 
         document.getElementById("messages").innerHTML += messageHTML;
     }
