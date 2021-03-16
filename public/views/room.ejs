@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script>
+        const ROOM_ID = "<%= roomId %>"
+    </script>
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/socket.io-client@3.1.1/dist/socket.io.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+    <script src="/resources/js/chat.js" defer></script>
+    <title>Your Chat Room</title>
+    <style>
+        #video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 640px);
+            grid-auto-rows: 480px;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: rotateY(180deg);
+            -webkit-transform:rotateY(180deg); /* Safari and Chrome */
+            -moz-transform:rotateY(180deg); /* Firefox */
+            border: solid grey;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-light navbar-expand-lg bg-light static-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">Teletrack.xyz</a>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/about">About</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <div class="col-lg justify-content-center no-float" style="background: #212529">
+                <div class="col-lg-10 col-md-10 ml-1">
+                    <div class="" id="video-grid"></div>
+                </div>
+            </div>
+            <!-- Chat + Robot Controls -->
+            <div class="col-sm-3 justify-content-center no-float">
+                <!-- Robot Controls -->
+                <div class="row">
+                    <div class="col-md mt-2 justify-content-center">
+                        <h1>Robot Controls</h1>
+                        <div class="row">
+                            <div class="container justify-content-center col-md-6 text-center">
+                                <h2>Camera</h2>
+                                <div class="grid-container justify-content-center">
+                                    <div class="grid-item"></div>
+                                    <div class="grid-item">
+                                        <button class="btn btn-primary" type="button" id="increase">
+                                            <i class="bi bi-arrow-up"></i>
+                                        </button>
+                                    </div>
+                                    <div class="grid-item"></div>
+                                    <div class="grid-item">
+                                        <button class="btn btn-primary" type="button" id="">
+                                            <i class="bi bi-arrow-left"></i>
+                                        </button>
+                                    </div>
+                                    <div class="grid-item"></div>
+                                    <div class="grid-item">
+                                        <button class="btn btn-primary" type="button" id="">
+                                            <i class="bi bi-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                    <div class="grid-item"></div>
+                                    <div class="grid-item">
+                                        <button class="btn btn-primary" type="button" id="decrease">
+                                            <i class="bi bi-arrow-down"></i>
+                                        </button>
+                                    </div>
+                                    <div class="grid-item"></div>
+                                </div>
+                            </div>
+                            <div class="container justify-content-center col-md-6 text-center">
+                                <h2>Arm</h2>
+                                <div class="grid-container col-md-3 justify-content-center">
+                                    <div class="grid-item"></div>
+                                    <div class="grid-item">
+                                        <button class="btn btn-primary" type="button" id="increase">
+                                            <i class="bi bi-arrow-up"></i>
+                                        </button>
+                                    </div>
+                                    <div class="grid-item"></div>
+                                    <div class="grid-item">
+                                        <button class="btn btn-primary" type="button" id="">
+                                            <i class="bi bi-arrow-left"></i>
+                                        </button>
+                                    </div>
+                                    <div class="grid-item"></div>
+                                    <div class="grid-item">
+                                        <button class="btn btn-primary" type="button" id="">
+                                            <i class="bi bi-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                    <div class="grid-item"></div>
+                                    <div class="grid-item">
+                                        <button class="btn btn-primary" type="button" id="decrease">
+                                            <i class="bi bi-arrow-down"></i>
+                                        </button>
+                                    </div>
+                                    <div class="grid-item"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3 text-center">
+                            <h3>Rail Movement</h3>
+                            <div class="container justify-content-center col-md-6 text-center">
+                                <button class="btn btn-primary" type="button" id="">
+                                    <i class="bi bi-arrow-left"></i>
+                                    Move Robot Left
+                                </button>
+                            </div>
+                            <div class="container justify-content-center col-md-6 text-center">
+                                <button class="btn btn-primary" type="button" id="">
+                                    Move Robot Right
+                                    <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="container">
+                            <div class="row mt-3 ml-4">
+                                <div class="container col-md-12 justify-content-center">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="laser" style="height: 18px; width: 60px; margin-right: 10px">
+                                        <label class="form-check-label" for="laser"><h5>Activate Laser</h5></label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <!-- Chat -->
+                <div class="row">
+                    <div class="col-lg">
+                        <div id="chat" class="">
+                            <div id="messages-container ">
+                                <div class="list-group overflow-auto" style="height: 400px;" id="messages"></div>
+                            </div>
+                            <div id="message-container">
+                                <div class="form-group">
+                                    <label class="control-label">Live chat</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="message" id="message" placeholder="Your message here ...">
+                                        <span class="input-group-btn">
+                                        <button id="send-message" class="btn btn-success">Send Message</button>
+                                    </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</body>
+<style>
+    .grid-container {
+        display: inline-grid;
+        grid-template-columns: auto auto auto;
+    }
+
+    /*html,body {*/
+    /*    height: 100%;*/
+    /*}*/
+</style>
+<script>
+    var socket = io(); //load socket.io-client and connect to the host that serves the page
+    window.addEventListener("load", function(){ //when page loads
+        // var lightbox = document.getElementById("light");
+        // lightbox.addEventListener("change", function() { //add event listener for when checkbox changes
+        //   socket.emit("light", Number(this.checked)); //send button status to server (as 1 or 0)
+        // });
+        var increase = document.getElementById("increase");
+        increase.addEventListener("click", function () {
+            socket.emit("increase");
+        });
+        var decrease = document.getElementById("decrease");
+        decrease.addEventListener("click", function () {
+            socket.emit("decrease");
+        });
+    });
+    // socket.on('light', function (data) { //get button status from client
+    //   document.getElementById("light").checked = data; //change checkbox according to push button on Raspberry Pi
+    //   socket.emit("light", data); //send push button status to back to server
+    // });
+</script>
+</html>

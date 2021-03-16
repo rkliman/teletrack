@@ -20,7 +20,7 @@ h6 {
 
 header.masthead {
     position: relative;
-    background: #343a40 url("bg.jpg") no-repeat center center;
+    background: #343a40 url("/resources/img/bg.jpg") no-repeat center center;
     background-size: cover;
     padding-top: 8rem;
     padding-bottom: 8rem;
