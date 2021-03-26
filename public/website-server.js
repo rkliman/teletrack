@@ -50,28 +50,27 @@ app.set('view engine', 'ejs')
 users = [];
 io.on('connection', socket => {
 
-    // socket.on('set-username', function (data) {
-    //     if(users.indexOf(data) > -1) {
-    //         users.push(data);
-    //         socket.emit('userSet', {username: data});
-    //     } else {
-    //         socket.emit('userExists', data + ' username is taken! Try some other username.');
-    //     }
-    // });
-
-    socket.on('join-room', (roomId, userId) => {
-        console.log(roomId, userId);
+    socket.on('join-room', (roomId, userId, username, hostBool) => {
+        var currentdate = new Date();
+        var timestamp = "Last Sync: " + currentdate.getDate() + "/"
+            + (currentdate.getMonth()+1)  + "/"
+            + currentdate.getFullYear() + " @ "
+            + currentdate.getHours() + ":"
+            + currentdate.getMinutes() + ":"
+            + currentdate.getSeconds();
+        console.log(timestamp, roomId, userId);
         socket.join(roomId);
-        socket.to(roomId).broadcast.emit('user-connected', userId)
+        socket.to(roomId).broadcast.emit('user-connected', userId, username, hostBool)
         socket.on('send-message', function (data) {
             socket.to(roomId).broadcast.emit('recieve-message', data);
-            console.log(data.text);
         })
+
         socket.on('disconnect', () => {
             socket.to(roomId).broadcast.emit('user-disconnected', userId);
         });
     });
-    socket.on('click-join', function () {
+
+    socket.on('enter-menu', function () {
         socket.emit('uuid-sent', uuidV4());
     });
 

@@ -1,11 +1,22 @@
 var socket = io()
 document.addEventListener("DOMContentLoaded", function(event) {
-    var button = document.getElementById("startCall").onclick = function () {
-        socket.emit('click-join');
+    socket.emit('enter-menu');
+
+    var user_uuid;
+
+    document.getElementById("startCall").onclick = function () {
+        window.location.href = window.location.href + "/" + user_uuid;
     };
 
+    document.getElementById("joinCall").onclick = function () {
+        var roomid = document.getElementById("peer-id-input").value;
+        window.location.href = window.location.href + "/" + roomid;
+    }
+
     socket.on('uuid-sent', function (uuid) {
-        window.location.href = window.location.href + "/" + uuid;
+        console.log(uuid);
+        user_uuid = uuid;
+        document.getElementById('peer-id-label').innerHTML = uuid;
     })
 });
 
