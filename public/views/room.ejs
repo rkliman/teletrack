@@ -17,6 +17,8 @@
     <title>Your Chat Room</title>
     <style>
         #video-grid {
+            /*margin-left: 10%;*/
+            /*margin-right: 10%;*/
             display: grid;
             grid-template-columns: repeat(auto-fill, 640px);
             /*grid-auto-rows: 480px;*/
@@ -25,10 +27,10 @@
             resize: horizontal;
             max-width: 100%;
             /*height: calc(100vh - 16px);*/
+            height: auto;
         }
 
         video {
-
             /*width: 100%;*/
             object-fit: cover;
             transform: rotateY(180deg);
@@ -92,7 +94,7 @@
                     <!-- Chat + Robot Controls -->
                     <div class="col-sm-3 justify-content-center no-float">
                         <!-- Robot Controls -->
-                        <div class="row">
+                        <div class="row" id = "robotControl">
                             <div class="col-md mt-2 justify-content-center">
                                 <h1>Robot Controls</h1>
                                 <div class="row">

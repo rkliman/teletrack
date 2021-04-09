@@ -6,6 +6,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
     var conn;
     var isHost = false;
     var isPi = false;
+    const peers = {};
+    var myVideoStream;
+    var myCall;
 
     /**
      * Important: the host needs to be changed according to your requirements.
@@ -33,9 +36,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 $('#pi-view').fadeIn('slow')
                 $('#pi-view').removeAttr('hidden')
                 videoGrid = document.getElementById('pi-video-grid');
+                //eunsan
+            } else if(document.getElementById("hostCheck").checked) {
+                $('#desktop-view').fadeIn('slow')
+                $('#desktop-view').removeAttr('hidden')
+                videoGrid = document.getElementById('video-grid');
+                //eunsan
             } else {
                 $('#desktop-view').fadeIn('slow')
                 $('#desktop-view').removeAttr('hidden')
+                var link = document.getElementById('robotControl');
+                link.style.visibility = 'hidden';
                 videoGrid = document.getElementById('video-grid');
             }
         }, 400);
@@ -43,8 +54,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
         myPeer = new Peer({
             host: "143.215.191.80",
             port: 3000,
-            path: '/peerjs',
+            path: '/',
             debug: 3,
+            secure: true
             // config: {
             //     'iceServers': [
             //         {url: 'stun:stun1.l.google.com:19302'},
@@ -57,39 +69,47 @@ document.addEventListener("DOMContentLoaded", function(event) {
             // }
         });
 
+        //this is for the video
         const myVideo = document.createElement('video');
-        const peers = {};
         myVideo.muted = true;
-        navigator.mediaDevices.getUserMedia({
+        var getUserMedia = navigator.mediaDevices.getUserMedia || navigator.mediaDevices.webkitGetUserMedia || navigator.mozGetUserMedia;
+        getUserMedia({
             video: true,
             audio:true
         }).then(stream => {
+            myVideoStream = stream;
             if(!isPi) {
                 addVideoStream(myVideo, stream);
             }
+        })
 
-            myPeer.on('call', call => {
-                call.answer(stream);
-                const video = document.createElement('video')
-                call.on('stream', userVideoStream => {
-                    addVideoStream(video, userVideoStream)
-                })
+        socket.on('user-connected', function(userId, user, hostBool) {
+            console.log("Userid: ", userId);
+            const call = myPeer.call(userId, myVideoStream);
+            const video = document.createElement('video');
+            call.on('stream', userVideoStream => {
+                console.log('Adding Peer Video Stream')
+                addVideoStream(video, userVideoStream, username)
+                // if (isPi && hostBool) {
+                //     addVideoStream(video, userVideoStream, username)
+                // } else if (!isPi) {
+                //     addVideoStream(video, userVideoStream, username)
+                // }
+            });
+            console.log('User Call')
+            call.on('close', () => {
+                video.remove()
+                console.log("F")
             });
 
-            socket.on('user-connected', function(userId, user, hostBool) {
-                console.log("new user connected")
-                connectToNewUser(userId, stream, user, hostBool)
-            })
+            peers[userId] = call;
         })
 
         socket.on('user-disconnected', userId => {
-            console.log("F")
             if(peers[userId]) peers[userId].close()
         });
 
         socket.on('recieve-message', data => {
-            console.log("recieve-message");
-            console.log(data.text);
             handleMessage(data);
         })
 
@@ -119,15 +139,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }, false);
 
         myPeer.on('open', id => {
-            console.log('open')
             socket.emit('join-room', ROOM_ID, id, username, isHost);
         });
+
+        myPeer.on('call', call => {
+            console.log('Call Started')
+            call.answer(myVideoStream);
+            const video = document.createElement('video')
+            call.on('stream', userVideoStream => {
+                console.log('User Video Stream')
+                addVideoStream(video, userVideoStream)
+            })
+        });
     }
-
-
-// socket.on('user-connected', userID => {
-//   console.log('User Connected: ' + userID)
-// });
 
     function addVideoStream(video, stream, username) {
         video.srcObject = stream;
@@ -136,27 +160,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
         });
         console.log(videoGrid.id)
         videoGrid.append(video)
-        var userText = document.createElement("p")
-        userText.append(username)
-        videoGrid.append(userText);
-    }
-
-    function connectToNewUser(userId, stream, username, hostBool) {
-        const call = myPeer.call(userId, stream);
-        const video = document.createElement('video');
-        call.on('stream', userVideoStream => {
-            if (isPi && hostBool) {
-                addVideoStream(video, userVideoStream, username)
-            } else if (!isPi) {
-                addVideoStream(video, userVideoStream, username)
-            }
-        });
-        call.on('close', () => {
-            video.remove()
-            console.log("F")
-        });
-
-        peers[userId] = call;
+        // var userText = document.createElement("p")
+        // userText.append(username)
+        // videoGrid.append(userText);
     }
 
     function handleMessage(data) {
