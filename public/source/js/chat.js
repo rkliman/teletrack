@@ -9,6 +9,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
     const peers = {};
     var myVideoStream;
     var myCall;
+    // var call;
+    var hostId = null;
+    var idMap = new Map()
 
     /**
      * Important: the host needs to be changed according to your requirements.
@@ -24,20 +27,22 @@ document.addEventListener("DOMContentLoaded", function(event) {
     var myPeer;
 
     document.getElementById("continue").onclick = function () {
+        // window.addEventListener("resize", recalculateLayout);
+
         username = document.getElementById("username").value;
-        if (document.getElementById("hostCheck").checked) {
-            isHost = true;
-        }
         $('#popup-menu').fadeOut('slow')
         setTimeout(function(){
             $('#popup-menu').addClass('d-none')
             if (document.getElementById("piCheck").checked) {
                 isPi = true;
+                username = username + " [Pi]";
                 $('#pi-view').fadeIn('slow')
                 $('#pi-view').removeAttr('hidden')
                 videoGrid = document.getElementById('pi-video-grid');
                 //eunsan
             } else if(document.getElementById("hostCheck").checked) {
+                isHost = true;
+                username = username + " [Host]";
                 $('#desktop-view').fadeIn('slow')
                 $('#desktop-view').removeAttr('hidden')
                 videoGrid = document.getElementById('video-grid');
@@ -55,18 +60,37 @@ document.addEventListener("DOMContentLoaded", function(event) {
             host: "143.215.191.80",
             port: 3000,
             path: '/',
-            debug: 3,
-            secure: true
-            // config: {
-            //     'iceServers': [
-            //         {url: 'stun:stun1.l.google.com:19302'},
-            //         {
-            //             url: 'turn:numb.viagenie.ca',
-            //             credential: 'muazkh',
-            //             username: 'webrtc@live.com'
-            //         }
-            //     ]
-            // }
+            debug: 2,
+            secure: true,
+            config: {
+                'iceServers': [
+                    {
+                        url: 'turn:numb.viagenie.ca',
+                        credential: 'muazkh',
+                        username: 'webrtc@live.com'
+                    },
+                    {
+                        url: 'turn:192.158.29.39:3478?transport=udp',
+                        credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                        username: '28224511:1379330808'
+                    },
+                    {
+                        url: 'turn:192.158.29.39:3478?transport=tcp',
+                        credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                        username: '28224511:1379330808'
+                    },
+                    {
+                        url: 'turn:turn.bistri.com:80',
+                        credential: 'homeo',
+                        username: 'homeo'
+                    },
+                    {
+                        url: 'turn:turn.anyfirewall.com:443?transport=tcp',
+                        credential: 'webrtc',
+                        username: 'webrtc'
+                    }
+                ]
+            }
         });
 
         //this is for the video
@@ -79,34 +103,68 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }).then(stream => {
             myVideoStream = stream;
             if(!isPi) {
-                addVideoStream(myVideo, stream);
+                addVideoStream(myVideo, myVideoStream, username);
             }
         })
 
-        socket.on('user-connected', function(userId, user, hostBool) {
-            console.log("Userid: ", userId);
-            const call = myPeer.call(userId, myVideoStream);
-            const video = document.createElement('video');
-            call.on('stream', userVideoStream => {
-                console.log('Adding Peer Video Stream')
-                addVideoStream(video, userVideoStream, username)
-                // if (isPi && hostBool) {
-                //     addVideoStream(video, userVideoStream, username)
-                // } else if (!isPi) {
-                //     addVideoStream(video, userVideoStream, username)
-                // }
+        socket.on('user-connected', function(userId, user, hostBool, piBool) {
+            if (hostBool) {
+                hostId = userId;
+            }
+            idMap[userId] = user
+            // connect to user and send username
+            var conn = myPeer.connect(userId);
+            conn.send(username)
+            var messageHTML =  '<div href="javascript:void(0);" class="list-group-item' + '">';
+            messageHTML += '<p class="list-group-item-text">'+ 'A user has joined the chat!' +'</p>';
+            messageHTML += '</div>';
+
+            var msgbox = document.getElementById("messages");
+            msgbox.innerHTML += messageHTML;
+            msgbox.scrollTop += msgbox.scrollHeight;
+
+            getUserMedia({video: true, audio: true}).then((stream) => {
+                const call = myPeer.call(userId, stream);
+                const video = document.createElement('video')
+                video.setAttribute("id",userId);
+                call.on('stream', (remoteVideoStream) => {
+                    console.log('Remote Video Stream')
+                    if (isPi) {
+                        if (hostBool) {
+                            addVideoStream(video, remoteVideoStream, user)
+                        }
+                    } else {
+                        addVideoStream(video, remoteVideoStream, user)
+                    }
+                })
+                peers[userId] = call;
+
+                call.on('close', () => {
+                    video.remove()
+                    console.log("F2")
+                });
+            }, (err) => {
+                console.error('Failed to get local stream', err);
             });
             console.log('User Call')
-            call.on('close', () => {
-                video.remove()
-                console.log("F")
-            });
 
-            peers[userId] = call;
+
+        })
+
+        socket.on('request-host', function () {
+            if (isHost) {
+                socket.emit('host-response', id)
+            }
+        })
+
+        socket.on('recieve-host', function (idHost) {
+            hostId = id;
         })
 
         socket.on('user-disconnected', userId => {
             if(peers[userId]) peers[userId].close()
+            const video = document.getElementById(userId);
+            video.remove();
         });
 
         socket.on('recieve-message', data => {
@@ -139,16 +197,44 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }, false);
 
         myPeer.on('open', id => {
-            socket.emit('join-room', ROOM_ID, id, username, isHost);
+            socket.emit('join-room', ROOM_ID, id, username, isHost, isPi);
+            //if not host, request hostID
+            if (!isHost) {
+                socket.emit('host-request')
+            }
         });
 
-        myPeer.on('call', call => {
+        myPeer.on('connection', function(conn) {
+            conn.on('data', function(remoteUsername) {
+                idMap[conn.peer] = remoteUsername;
+            })
+        })
+
+        myPeer.on('call', function(remoteCall) {
             console.log('Call Started')
-            call.answer(myVideoStream);
+            remoteCall.answer(myVideoStream);
+            if(!peers[remoteCall.peer]) {
+                getUserMedia({video: true, audio: true}).then((stream) => {
+                    console.log("pain")
+                    if (!isPi) {
+                        const call = myPeer.call(remoteCall.peer, stream);
+                        peers[remoteCall.peer] = call;
+                    }
+                }, (err) => {
+                    console.error('Failed to get local stream', err);
+                });
+            }
             const video = document.createElement('video')
-            call.on('stream', userVideoStream => {
-                console.log('User Video Stream')
-                addVideoStream(video, userVideoStream)
+            video.setAttribute("id",remoteCall.peer);
+            remoteCall.on('stream', remoteVideoStream => {
+                console.log('Remote Video Stream')
+                if (isPi) {
+                    if (remoteCall.peer == hostId) {
+                        addVideoStream(video, remoteVideoStream, idMap[remoteCall.peer] + "[Host]")
+                    }
+                } else {
+                    addVideoStream(video, remoteVideoStream)
+                }
             })
         });
     }
@@ -159,10 +245,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
             video.play()
         });
         console.log(videoGrid.id)
-        videoGrid.append(video)
-        // var userText = document.createElement("p")
-        // userText.append(username)
-        // videoGrid.append(userText);
+        var video_container = document.createElement("div");
+        video_container.classList.add("col-lg-3");
+        video_container.append(video)
+        var userText = document.createElement("div")
+        var text = document.createElement("p")
+        text.append(username)
+        userText.append(text)
+        userText.classList.add("usernameText")
+        video_container.append(userText);
+        videoGrid.append(video_container)
+        // recalculateLayout();
     }
 
     function handleMessage(data) {

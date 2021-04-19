@@ -50,7 +50,7 @@ app.set('view engine', 'ejs')
 users = [];
 io.on('connection', socket => {
 
-    socket.on('join-room', (roomId, userId, username, hostBool) => {
+    socket.on('join-room', (roomId, userId, username, hostBool, piBool) => {
         var currentdate = new Date();
         var timestamp = "Last Sync: " + currentdate.getDate() + "/"
             + (currentdate.getMonth()+1)  + "/"
@@ -60,10 +60,19 @@ io.on('connection', socket => {
             + currentdate.getSeconds();
         console.log(timestamp, roomId, userId);
         socket.join(roomId);
-        socket.to(roomId).broadcast.emit('user-connected', userId, username, hostBool)
+        socket.to(roomId).broadcast.emit('user-connected', userId, username, hostBool, piBool)
         socket.on('send-message', function (data) {
             socket.to(roomId).broadcast.emit('recieve-message', data);
         })
+
+        socket.on('host-request', function () {
+            socket.to(roomId).broadcast.emit('request-host', data);
+        })
+
+        socket.on('host-response', function (hostId) {
+            socket.to(roomId).broadcast.emit(('recieve-host', hostId))
+            }
+        )
 
         socket.on('disconnect', () => {
             socket.to(roomId).broadcast.emit('user-disconnected', userId);
@@ -98,7 +107,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/about', function (req, res) {
-    res.sendFile(path.join(__dirname+'/pages/about.html'));
+    res.sendFile(path.join(__dirname+'/pages/about_new.html'));
 })
 
 app.get('/chat', function (req, res) {
