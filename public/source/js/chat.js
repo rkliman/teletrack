@@ -27,7 +27,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
     var myPeer;
 
     document.getElementById("continue").onclick = function () {
-        // window.addEventListener("resize", recalculateLayout);
 
         username = document.getElementById("username").value;
         $('#popup-menu').fadeOut('slow')
@@ -103,11 +102,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }).then(stream => {
             myVideoStream = stream;
             if(!isPi) {
-                addVideoStream(myVideo, myVideoStream, username);
+                addLocalStream(myVideo, myVideoStream, username);
             }
         })
 
         socket.on('user-connected', function(userId, user, hostBool, piBool) {
+            console.log("User Connected. Is Host? " + hostBool)
             if (hostBool) {
                 hostId = userId;
             }
@@ -228,9 +228,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
             video.setAttribute("id",remoteCall.peer);
             remoteCall.on('stream', remoteVideoStream => {
                 console.log('Remote Video Stream')
+                console.log(remoteCall.peer)
+                console.log(hostId)
                 if (isPi) {
                     if (remoteCall.peer == hostId) {
-                        addVideoStream(video, remoteVideoStream, idMap[remoteCall.peer] + "[Host]")
+                        addPiHostStream(video, remoteVideoStream, idMap[remoteCall.peer] + "[Host]")
                     }
                 } else {
                     addVideoStream(video, remoteVideoStream)
@@ -239,12 +241,15 @@ document.addEventListener("DOMContentLoaded", function(event) {
         });
     }
 
+
+    /*
+    Adds remote video as well as a username
+     */
     function addVideoStream(video, stream, username) {
         video.srcObject = stream;
         video.addEventListener('loadedmetadata', () => {
             video.play()
         });
-        console.log(videoGrid.id)
         var video_container = document.createElement("div");
         video_container.classList.add("col-lg-3");
         video_container.append(video)
@@ -255,6 +260,45 @@ document.addEventListener("DOMContentLoaded", function(event) {
         userText.classList.add("usernameText")
         video_container.append(userText);
         videoGrid.append(video_container)
+        // recalculateLayout();
+    }
+
+    function addLocalStream(video, stream, username) {
+        const video_panel = document.getElementById("video-panel")
+        video.srcObject = stream;
+        video.addEventListener('loadedmetadata', () => {
+            video.play()
+        });
+        console.log(videoGrid.id)
+        var video_container = document.createElement("div");
+        video_container.append(video)
+        var userText = document.createElement("div")
+        var text = document.createElement("p")
+        text.append(username)
+        userText.append(text)
+        userText.classList.add("usernameText")
+        video_container.append(userText);
+        video_panel.append(video_container)
+        // recalculateLayout();
+    }
+
+    function addPiHostStream(video, stream, username) {
+        const video_panel = document.getElementById("video-panel")
+        video.srcObject = stream;
+        video.addEventListener('loadedmetadata', () => {
+            video.play()
+        });
+        console.log(videoGrid.id)
+        var video_container = document.createElement("div");
+        video.classList.add("pi-host")
+        video_container.append(video)
+        var userText = document.createElement("div")
+        var text = document.createElement("p")
+        text.append(username)
+        userText.append(text)
+        userText.classList.add("usernameText")
+        video_container.append(userText);
+        video_panel.append(video_container)
         // recalculateLayout();
     }
 

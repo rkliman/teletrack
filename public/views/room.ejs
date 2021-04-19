@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script>
         const ROOM_ID = "<%= roomId %>"
@@ -16,18 +15,23 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
     <title>Your Chat Room</title>
     <style>
-        :root {
-            --width: 0px;
-            --height: 0px;
-            --cols: 1;
+        html, body {
+            overflow-x: hidden;
         }
-
         #video-grid {
             justify-content: center;
             /*grid-template-columns: repeat(auto-fill, 640px);*/
             /*grid-auto-rows: 480px;*/
             gap: 5px;
             padding: 5px;
+        }
+
+        #video-panel {
+            width: 15%;
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            padding-left: 7px
         }
 
         .grid-container {
@@ -43,14 +47,24 @@
             -webkit-transform:rotateY(180deg); /* Safari and Chrome */
             -moz-transform:rotateY(180deg); /* Firefox */
             border: solid grey;
+            box-shadow: -5px 5px 5px black;
+        }
+
+        .pi-host {
+            max-height: 96vh
         }
 
         .usernameText {
             position: relative;
+            text-align: right;
             bottom: 30px;
-            background-color: grey;
             color: white;
-            padding-left: 5px;
+            padding-right: 10px;
+            background-color: #212529;
+        }
+
+        .remoteVideo {
+            max-width: 90%;
         }
     </style>
 </head>
@@ -84,13 +98,19 @@
         </div>
     </div>
     <div>
-        <div hidden class="" id="pi-view" style="position: absolute">
-            <p>lol</p>
-            <div class="" id="pi-video-grid"></div>
-        </div >
+        <div hidden class="" id="pi-view">
+            <div class="row" style="min-width: 100vw">
+                <!--  Video Panel -->
+                <div class="col-lg">
+                    <div class="row" id="pi-video-grid">
+                    </div>
+                    <p>Waiting For Host</p>
+                </div>
+            </div>
+        </div>
         <div hidden class="" id="desktop-view">
             <!-- Navigation -->
-            <nav class="navbar navbar-light navbar-expand-lg bg-light static-top">
+            <nav class="navbar navbar-light navbar-expand-lg bg-light navbar-fixed-top">
                 <div class="container">
                     <a class="navbar-brand" href="/">Teletrack.xyz</a>
                     <ul class="navbar-nav ml-auto">
@@ -100,176 +120,132 @@
                     </ul>
                 </div>
             </nav>
-            <div>
-                <div class="row">
-                    <div class="col-lg justify-content-center no-float" style="background: #212529">
-                        <div class="">
-                            <div class="row" id="video-grid">
-                                <div class="col-3">
-                                    <video
-                                           autoplay
-                                           loop
-                                           muted
-                                           src="https://dosant.github.io/video.mp4"
-                                    ></video>
-                                    <div class="usernameText">UserText</div>
+            <div class="row">
+                <!--  Video Panel -->
+                <div class="col-lg" style="min-height: 94vh; background-color: #343a40">
+                    <div class="row" id="video-grid">
+                        <div class="col remoteVideo">
+                            <video
+                                    autoplay
+                                    loop
+                                    muted
+                                    src="https://dosant.github.io/video.mp4"
+                            ></video>
+                            <div class="usernameText">UserText</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3 justify-content-center no-float">
+                    <!-- Robot Controls -->
+                    <div class="row" id = "robotControl">
+                        <div class="col-md mt-2 justify-content-center">
+                            <h1>Robot Controls</h1>
+                            <div class="row">
+                                <div class="container justify-content-center col-md-6 text-center">
+                                    <h2>Camera</h2>
+                                    <div class="grid-container justify-content-center">
+                                        <div class="grid-item"></div>
+                                        <div class="grid-item">
+                                            <button class="btn btn-primary" type="button" id="increase">
+                                                <i class="bi bi-arrow-up"></i>
+                                            </button>
+                                        </div>
+                                        <div class="grid-item"></div>
+                                        <div class="grid-item">
+                                            <button class="btn btn-primary" type="button" id="">
+                                                <i class="bi bi-arrow-left"></i>
+                                            </button>
+                                        </div>
+                                        <div class="grid-item"></div>
+                                        <div class="grid-item">
+                                            <button class="btn btn-primary" type="button" id="">
+                                                <i class="bi bi-arrow-right"></i>
+                                            </button>
+                                        </div>
+                                        <div class="grid-item"></div>
+                                        <div class="grid-item">
+                                            <button class="btn btn-primary" type="button" id="decrease">
+                                                <i class="bi bi-arrow-down"></i>
+                                            </button>
+                                        </div>
+                                        <div class="grid-item"></div>
+                                    </div>
                                 </div>
-                                <div class="col-3">
-                                    <video
-                                           autoplay
-                                           loop
-                                           muted
-                                           src="https://dosant.github.io/video.mp4"
-                                    ></video>
+                                <div class="container justify-content-center col-md-6 text-center">
+                                    <h2>Arm</h2>
+                                    <div class="grid-container col-md-3 justify-content-center">
+                                        <div class="grid-item"></div>
+                                        <div class="grid-item">
+                                            <button class="btn btn-primary" type="button" id="increase">
+                                                <i class="bi bi-arrow-up"></i>
+                                            </button>
+                                        </div>
+                                        <div class="grid-item"></div>
+                                        <div class="grid-item">
+                                            <button class="btn btn-primary" type="button" id="">
+                                                <i class="bi bi-arrow-left"></i>
+                                            </button>
+                                        </div>
+                                        <div class="grid-item"></div>
+                                        <div class="grid-item">
+                                            <button class="btn btn-primary" type="button" id="">
+                                                <i class="bi bi-arrow-right"></i>
+                                            </button>
+                                        </div>
+                                        <div class="grid-item"></div>
+                                        <div class="grid-item">
+                                            <button class="btn btn-primary" type="button" id="decrease">
+                                                <i class="bi bi-arrow-down"></i>
+                                            </button>
+                                        </div>
+                                        <div class="grid-item"></div>
+                                    </div>
                                 </div>
-                                <div class="col-3">
-                                    <video
-                                            autoplay
-                                            loop
-                                            muted
-                                            src="https://dosant.github.io/video.mp4"
-                                    ></video>
+                            </div>
+                            <div class="row mt-3 text-center">
+                                <h3>Rail Movement</h3>
+                                <div class="container justify-content-center col-md-6 text-center">
+                                    <button class="btn btn-primary" type="button" id="">
+                                        <i class="bi bi-arrow-left"></i>
+                                        Move Robot Left
+                                    </button>
                                 </div>
-                                <div class="col-3">
-                                    <video
-                                            autoplay
-                                            loop
-                                            muted
-                                            src="https://dosant.github.io/video.mp4"
-                                    ></video>
+                                <div class="container justify-content-center col-md-6 text-center">
+                                    <button class="btn btn-primary" type="button" id="">
+                                        Move Robot Right
+                                        <i class="bi bi-arrow-right"></i>
+                                    </button>
                                 </div>
-                                <div class="col-3">
-                                    <video
-                                            autoplay
-                                            loop
-                                            muted
-                                            src="https://dosant.github.io/video.mp4"
-                                    ></video>
-                                </div>
-                                <div class="col-3">
-                                    <video
-                                            autoplay
-                                            loop
-                                            muted
-                                            src="https://dosant.github.io/video.mp4"
-                                    ></video>
+                            </div>
+                            <div class="container">
+                                <div class="row mt-3 ml-4">
+                                    <div class="container col-md-11 justify-content-center">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="laser" style="height: 18px; width: 60px; margin-right: 10px">
+                                            <label class="form-check-label" for="laser"><h5>Activate Laser</h5></label>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- Chat + Robot Controls -->
-                    <div class="col-sm-3 justify-content-center no-float">
-                        <!-- Robot Controls -->
-                        <div class="row" id = "robotControl">
-                            <div class="col-md mt-2 justify-content-center">
-                                <h1>Robot Controls</h1>
-                                <div class="row">
-                                    <div class="container justify-content-center col-md-6 text-center">
-                                        <h2>Camera</h2>
-                                        <div class="grid-container justify-content-center">
-                                            <div class="grid-item"></div>
-                                            <div class="grid-item">
-                                                <button class="btn btn-primary" type="button" id="increase">
-                                                    <i class="bi bi-arrow-up"></i>
-                                                </button>
-                                            </div>
-                                            <div class="grid-item"></div>
-                                            <div class="grid-item">
-                                                <button class="btn btn-primary" type="button" id="">
-                                                    <i class="bi bi-arrow-left"></i>
-                                                </button>
-                                            </div>
-                                            <div class="grid-item"></div>
-                                            <div class="grid-item">
-                                                <button class="btn btn-primary" type="button" id="">
-                                                    <i class="bi bi-arrow-right"></i>
-                                                </button>
-                                            </div>
-                                            <div class="grid-item"></div>
-                                            <div class="grid-item">
-                                                <button class="btn btn-primary" type="button" id="decrease">
-                                                    <i class="bi bi-arrow-down"></i>
-                                                </button>
-                                            </div>
-                                            <div class="grid-item"></div>
-                                        </div>
-                                    </div>
-                                    <div class="container justify-content-center col-md-6 text-center">
-                                        <h2>Arm</h2>
-                                        <div class="grid-container col-md-3 justify-content-center">
-                                            <div class="grid-item"></div>
-                                            <div class="grid-item">
-                                                <button class="btn btn-primary" type="button" id="increase">
-                                                    <i class="bi bi-arrow-up"></i>
-                                                </button>
-                                            </div>
-                                            <div class="grid-item"></div>
-                                            <div class="grid-item">
-                                                <button class="btn btn-primary" type="button" id="">
-                                                    <i class="bi bi-arrow-left"></i>
-                                                </button>
-                                            </div>
-                                            <div class="grid-item"></div>
-                                            <div class="grid-item">
-                                                <button class="btn btn-primary" type="button" id="">
-                                                    <i class="bi bi-arrow-right"></i>
-                                                </button>
-                                            </div>
-                                            <div class="grid-item"></div>
-                                            <div class="grid-item">
-                                                <button class="btn btn-primary" type="button" id="decrease">
-                                                    <i class="bi bi-arrow-down"></i>
-                                                </button>
-                                            </div>
-                                            <div class="grid-item"></div>
-                                        </div>
-                                    </div>
+                    <hr>
+                    <!-- Chat -->
+                    <div class="row">
+                        <div class="col-lg">
+                            <div id="chat" class="">
+                                <div id="messages-container ">
+                                    <div class="list-group overflow-auto" style="height: 400px;" id="messages"></div>
                                 </div>
-                                <div class="row mt-3 text-center">
-                                    <h3>Rail Movement</h3>
-                                    <div class="container justify-content-center col-md-6 text-center">
-                                        <button class="btn btn-primary" type="button" id="">
-                                            <i class="bi bi-arrow-left"></i>
-                                            Move Robot Left
-                                        </button>
-                                    </div>
-                                    <div class="container justify-content-center col-md-6 text-center">
-                                        <button class="btn btn-primary" type="button" id="">
-                                            Move Robot Right
-                                            <i class="bi bi-arrow-right"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="container">
-                                    <div class="row mt-3 ml-4">
-                                        <div class="container col-md-12 justify-content-center">
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" id="laser" style="height: 18px; width: 60px; margin-right: 10px">
-                                                <label class="form-check-label" for="laser"><h5>Activate Laser</h5></label>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <hr>
-                        <!-- Chat -->
-                        <div class="row">
-                            <div class="col-lg">
-                                <div id="chat" class="">
-                                    <div id="messages-container ">
-                                        <div class="list-group overflow-auto" style="height: 400px;" id="messages"></div>
-                                    </div>
-                                    <div id="message-container">
-                                        <div class="form-group">
-                                            <label class="control-label">Live chat</label>
-                                            <div class="input-group">
-                                                <input type="text" class="form-control" name="message" id="message" placeholder="Your message here ...">
-                                                <span class="input-group-btn">
+                                <div id="message-container">
+                                    <div class="form-group">
+                                        <label class="control-label">Live chat</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" name="message" id="message" placeholder="Your message here ...">
+                                            <span class="input-group-btn">
                                                 <button id="send-message" class="btn btn-success">Send Message</button>
                                             </span>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -277,6 +253,7 @@
                         </div>
                     </div>
                 </div>
+                <div class="" id="video-panel"></div>
             </div>
         </div>
     </div>
