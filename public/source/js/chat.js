@@ -241,6 +241,40 @@ document.addEventListener("DOMContentLoaded", function(event) {
         });
     }
 
+    /*
+    Robot Movement
+     */
+    document.getElementById("track-left").onclick = function () {
+        socket.emit('track-left')
+    }
+    document.getElementById("track-right").onclick = function () {
+        socket.emit('track-right')
+    }
+    document.getElementById("robot-left").onclick = function () {
+        socket.emit('robot-left')
+    }
+    document.getElementById("robot-right").onclick = function () {
+        socket.emit('robot-right')
+    }
+    document.getElementById("robot-up").onclick = function () {
+        socket.emit('robot-up')
+    }
+    document.getElementById("robot-down").onclick = function () {
+        socket.emit('robot-down')
+    }
+    document.getElementById("laser-left").onclick = function () {
+        socket.emit('laser-left')
+    }
+    document.getElementById("laser-right").onclick = function () {
+        socket.emit('laser-right')
+    }
+    document.getElementById("laser-up").onclick = function () {
+        socket.emit('laser-up')
+    }
+    document.getElementById("laser-down").onclick = function () {
+        socket.emit('laser-down')
+    }
+
 
     /*
     Adds remote video as well as a username

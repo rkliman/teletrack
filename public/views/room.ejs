@@ -146,25 +146,25 @@
                                     <div class="grid-container justify-content-center">
                                         <div class="grid-item"></div>
                                         <div class="grid-item">
-                                            <button class="btn btn-primary" type="button" id="increase">
+                                            <button class="btn btn-primary" type="button" id="robot-up">
                                                 <i class="bi bi-arrow-up"></i>
                                             </button>
                                         </div>
                                         <div class="grid-item"></div>
                                         <div class="grid-item">
-                                            <button class="btn btn-primary" type="button" id="">
+                                            <button class="btn btn-primary" type="button" id="robot-left">
                                                 <i class="bi bi-arrow-left"></i>
                                             </button>
                                         </div>
                                         <div class="grid-item"></div>
                                         <div class="grid-item">
-                                            <button class="btn btn-primary" type="button" id="">
+                                            <button class="btn btn-primary" type="button" id="robot-right">
                                                 <i class="bi bi-arrow-right"></i>
                                             </button>
                                         </div>
                                         <div class="grid-item"></div>
                                         <div class="grid-item">
-                                            <button class="btn btn-primary" type="button" id="decrease">
+                                            <button class="btn btn-primary" type="button" id="robot-down">
                                                 <i class="bi bi-arrow-down"></i>
                                             </button>
                                         </div>
@@ -176,25 +176,25 @@
                                     <div class="grid-container col-md-3 justify-content-center">
                                         <div class="grid-item"></div>
                                         <div class="grid-item">
-                                            <button class="btn btn-primary" type="button" id="increase">
+                                            <button class="btn btn-primary" type="button" id="laser-up">
                                                 <i class="bi bi-arrow-up"></i>
                                             </button>
                                         </div>
                                         <div class="grid-item"></div>
                                         <div class="grid-item">
-                                            <button class="btn btn-primary" type="button" id="">
+                                            <button class="btn btn-primary" type="button" id="laser-left">
                                                 <i class="bi bi-arrow-left"></i>
                                             </button>
                                         </div>
                                         <div class="grid-item"></div>
                                         <div class="grid-item">
-                                            <button class="btn btn-primary" type="button" id="">
+                                            <button class="btn btn-primary" type="button" id="laser-right">
                                                 <i class="bi bi-arrow-right"></i>
                                             </button>
                                         </div>
                                         <div class="grid-item"></div>
                                         <div class="grid-item">
-                                            <button class="btn btn-primary" type="button" id="decrease">
+                                            <button class="btn btn-primary" type="button" id="laser-down">
                                                 <i class="bi bi-arrow-down"></i>
                                             </button>
                                         </div>
@@ -205,13 +205,13 @@
                             <div class="row mt-3 text-center">
                                 <h3>Rail Movement</h3>
                                 <div class="container justify-content-center col-md-6 text-center">
-                                    <button class="btn btn-primary" type="button" id="">
+                                    <button class="btn btn-primary" type="button" id="track-left">
                                         <i class="bi bi-arrow-left"></i>
                                         Move Robot Left
                                     </button>
                                 </div>
                                 <div class="container justify-content-center col-md-6 text-center">
-                                    <button class="btn btn-primary" type="button" id="">
+                                    <button class="btn btn-primary" type="button" id="track-right">
                                         Move Robot Right
                                         <i class="bi bi-arrow-right"></i>
                                     </button>
@@ -258,21 +258,4 @@
         </div>
     </div>
 </body>
-<script>
-    var socket = io(); //load socket.io-client and connect to the host that serves the page
-    window.addEventListener("load", function(){ //when page loads
-        // var lightbox = document.getElementById("light");
-        // lightbox.addEventListener("change", function() { //add event listener for when checkbox changes
-        //   socket.emit("light", Number(this.checked)); //send button status to server (as 1 or 0)
-        // });
-        var increase = document.getElementById("increase");
-        increase.addEventListener("click", function () {
-            socket.emit("increase");
-        });
-        var decrease = document.getElementById("decrease");
-        decrease.addEventListener("click", function () {
-            socket.emit("decrease");
-        });
-    });
-</script>
 </html>

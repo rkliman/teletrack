@@ -10,6 +10,8 @@ var https  = require('https');
 var path   = require("path");
 var os     = require('os');
 var ifaces = os.networkInterfaces();
+const raspi = require('raspi');
+const Serial = require('raspi-serial').Serial;
 
 // Public Self-Signed Certificates for HTTPS connection
 var privateKey  = fs.readFileSync('./../certificates/privkey.pem', 'utf8');
@@ -65,7 +67,7 @@ io.on('connection', socket => {
             socket.to(roomId).broadcast.emit('recieve-message', data);
         })
 
-        socket.on('host-request', function () {
+        socket.on('host-request', function (data) {
             socket.to(roomId).broadcast.emit('request-host', data);
         })
 
@@ -83,20 +85,40 @@ io.on('connection', socket => {
         socket.emit('uuid-sent', uuidV4());
     });
 
-    socket.on('increase', () => {
-        // console.log("increase");
-        if (pulseWidth+100 < 2000) {
-            pulseWidth += 100;
-            motor.servoWrite(pulseWidth);
-        }
-    });
-    socket.on('decrease', () => {
-        // console.log("decrease");
-        if (pulseWidth-100 > 500) {
-            pulseWidth -= 100;
-            motor.servoWrite(pulseWidth);
-            // console.log(pulseWidth);
-        }
+    raspi.init(() => {
+        var serial = new Serial();
+        serial.open(() => {
+            socket.on('track-left', () => {
+                serial.write('track-left');
+            });
+            socket.on('track-right', () => {
+                serial.write('track-right');
+            });
+            socket.on('robot-left', () => {
+                serial.write('robot-left');
+            });
+            socket.on('robot-right', () => {
+                serial.write('robot-right');
+            });
+            socket.on('robot-up', () => {
+                serial.write('robot-up');
+            });
+            socket.on('robot-down', () => {
+                serial.write('robot-down');
+            });
+            socket.on('laser-left', () => {
+                serial.write('laser-left');
+            });
+            socket.on('laser-right', () => {
+                serial.write('laser-right');
+            });
+            socket.on('laser-up', () => {
+                serial.write('laser-up');
+            });
+            socket.on('laser-down', () => {
+                serial.write('laser-down');
+            });
+        });
     });
 })
 
