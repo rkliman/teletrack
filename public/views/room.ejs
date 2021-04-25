@@ -26,7 +26,7 @@
             padding: 5px;
         }
 
-        #video-panel {
+        #myVideo {
             width: 15%;
             position: absolute;
             left: 0;
@@ -65,6 +65,11 @@
 
         .remoteVideo {
             max-width: 90%;
+            height: 90vh;
+        }
+
+        .remoteStream {
+            max-height: 90vh;
         }
     </style>
 </head>
@@ -86,13 +91,6 @@
                     </label>
                     <div id="pihelp" class="form-text">Only check this if you're running teletrack on the telepresence robot.</div>
                 </div>
-                <div class="mb-3">
-                    <input class="form-check-input" type="checkbox" value="" id="hostCheck">
-                    <label class="form-check-label" for="hostCheck">
-                        I am the meeting host
-                    </label>
-                    <div id="hostHelp" class="form-text">Only check this if you're the host of the meeting</div>
-                </div>
                 <button class="btn btn-primary" type="button" id="continue">Continue</button>
             </form>
         </div>
@@ -103,6 +101,8 @@
                 <!--  Video Panel -->
                 <div class="col-lg">
                     <div class="row" id="pi-video-grid">
+                        <div id="piRemoteVideo"></div>
+                        <div class="usernameText" id="remoteUsername"></div>
                     </div>
                     <p>Waiting For Host</p>
                 </div>
@@ -125,13 +125,8 @@
                 <div class="col-lg" style="min-height: 94vh; background-color: #343a40">
                     <div class="row" id="video-grid">
                         <div class="col remoteVideo">
-                            <video
-                                    autoplay
-                                    loop
-                                    muted
-                                    src="https://dosant.github.io/video.mp4"
-                            ></video>
-                            <div class="usernameText">UserText</div>
+                            <div id="remoteVideo"></div>
+                            <div class="usernameText" id="remoteUsername"></div>
                         </div>
                     </div>
                 </div>
@@ -253,7 +248,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="" id="video-panel"></div>
+                <div id="myVideo">
+                    <div id="video-panel"></div>
+                    <div class="usernameText" id="myUsername"></div>
+                </div>
             </div>
         </div>
     </div>

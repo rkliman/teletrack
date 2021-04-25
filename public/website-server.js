@@ -50,35 +50,29 @@ request1.end();
 app.set('view engine', 'ejs')
 
 users = [];
+var numusers = 0;
 io.on('connection', socket => {
 
     socket.on('join-room', (roomId, userId, username, hostBool, piBool) => {
-        var currentdate = new Date();
-        var timestamp = "Last Sync: " + currentdate.getDate() + "/"
-            + (currentdate.getMonth()+1)  + "/"
-            + currentdate.getFullYear() + " @ "
-            + currentdate.getHours() + ":"
-            + currentdate.getMinutes() + ":"
-            + currentdate.getSeconds();
-        console.log(timestamp, roomId, userId);
-        socket.join(roomId);
-        socket.to(roomId).broadcast.emit('user-connected', userId, username, hostBool, piBool)
-        socket.on('send-message', function (data) {
-            socket.to(roomId).broadcast.emit('recieve-message', data);
-        })
+        if (true) { //only allow joining if room isn't full
+            var currentdate = new Date();
+            var timestamp = "Last Sync: " + currentdate.getDate() + "/"
+                + (currentdate.getMonth() + 1) + "/"
+                + currentdate.getFullYear() + " @ "
+                + currentdate.getHours() + ":"
+                + currentdate.getMinutes() + ":"
+                + currentdate.getSeconds();
+            console.log(timestamp, roomId, userId, hostBool, piBool);
+            socket.join(roomId);
+            socket.to(roomId).broadcast.emit('user-connected', userId, username, hostBool, piBool)
+            socket.on('send-message', function (data) {
+                socket.to(roomId).broadcast.emit('recieve-message', data);
+            })
 
-        socket.on('host-request', function (data) {
-            socket.to(roomId).broadcast.emit('request-host', data);
-        })
-
-        socket.on('host-response', function (hostId) {
-            socket.to(roomId).broadcast.emit(('recieve-host', hostId))
-            }
-        )
-
-        socket.on('disconnect', () => {
-            socket.to(roomId).broadcast.emit('user-disconnected', userId);
-        });
+            socket.on('disconnect', () => {
+                socket.to(roomId).broadcast.emit('user-disconnected', userId);
+            });
+        }
     });
 
     socket.on('enter-menu', function () {

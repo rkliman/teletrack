@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     // var call;
     var hostId = null;
     var idMap = new Map()
+    var remoteUsername;
 
     /**
      * Important: the host needs to be changed according to your requirements.
@@ -24,7 +25,86 @@ document.addEventListener("DOMContentLoaded", function(event) {
     const socket = io('/');
     var videoGrid = document.getElementById('video-grid');
 
-    var myPeer;
+    var myPeer = new Peer({
+        host: "143.215.191.80",
+        port: 3000,
+        path: '/',
+        debug: 2,
+        secure: true,
+        config: {
+            'iceServers': [
+                {
+                    url: 'turn:numb.viagenie.ca',
+                    credential: 'muazkh',
+                    username: 'webrtc@live.com'
+                },
+                {
+                    url: 'turn:192.158.29.39:3478?transport=udp',
+                    credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                    username: '28224511:1379330808'
+                },
+                {
+                    url: 'turn:192.158.29.39:3478?transport=tcp',
+                    credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                    username: '28224511:1379330808'
+                },
+                {
+                    url: 'turn:turn.bistri.com:80',
+                    credential: 'homeo',
+                    username: 'homeo'
+                },
+                {
+                    url: 'turn:turn.anyfirewall.com:443?transport=tcp',
+                    credential: 'webrtc',
+                    username: 'webrtc'
+                }
+            ]
+        }
+    });
+
+    myPeer.on('open', (id) => {
+        peer_id = id;
+    })
+
+    myPeer.on('connection', function(conn) {
+        conn.on('open', function () {
+            conn.on('data', function(user) {
+                remoteUsername = user;
+                console.log("Remote Username: " + remoteUsername)
+            })
+        })
+    })
+
+    myPeer.on('call', function(remoteCall) {
+        console.log('Call From' + remoteUsername)
+        remoteCall.answer(myVideoStream);
+        // if(!peers[remoteCall.peer]) {
+        //     getUserMedia({video: true, audio: true}).then((stream) => {
+        //         console.log("pain")
+        //         if (!isPi) {
+        //             const call = myPeer.call(remoteCall.peer, stream);
+        //             peers[remoteCall.peer] = call;
+        //         }
+        //     }, (err) => {
+        //         console.error('Failed to get local stream', err);
+        //     });
+        // }
+        const video = document.createElement('video')
+        remoteCall.on('stream', remoteVideoStream => {
+            console.log('Remote Video Stream - second')
+            console.log(remoteCall.peer)
+            if (isPi) {
+                addPiStream(video,remoteVideoStream, remoteUsername)
+            } else {
+                addRemoteStream(video,remoteVideoStream, remoteUsername)
+            }
+        })
+
+        remoteCall.on('close', () => {
+            video.parentElement.parentElement.remove()
+            console.log("Remote User Disconnected")
+        });
+    });
 
     document.getElementById("continue").onclick = function () {
 
@@ -38,13 +118,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 $('#pi-view').fadeIn('slow')
                 $('#pi-view').removeAttr('hidden')
                 videoGrid = document.getElementById('pi-video-grid');
-                //eunsan
-            } else if(document.getElementById("hostCheck").checked) {
-                isHost = true;
-                username = username + " [Host]";
-                $('#desktop-view').fadeIn('slow')
-                $('#desktop-view').removeAttr('hidden')
-                videoGrid = document.getElementById('video-grid');
+                socket.emit('join-room', ROOM_ID, peer_id, username, isHost, isPi);
                 //eunsan
             } else {
                 $('#desktop-view').fadeIn('slow')
@@ -52,45 +126,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 var link = document.getElementById('robotControl');
                 link.style.visibility = 'hidden';
                 videoGrid = document.getElementById('video-grid');
+                socket.emit('join-room', ROOM_ID, peer_id, username, isHost, isPi);
             }
         }, 400);
-
-        myPeer = new Peer({
-            host: "143.215.191.80",
-            port: 3000,
-            path: '/',
-            debug: 2,
-            secure: true,
-            config: {
-                'iceServers': [
-                    {
-                        url: 'turn:numb.viagenie.ca',
-                        credential: 'muazkh',
-                        username: 'webrtc@live.com'
-                    },
-                    {
-                        url: 'turn:192.158.29.39:3478?transport=udp',
-                        credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-                        username: '28224511:1379330808'
-                    },
-                    {
-                        url: 'turn:192.158.29.39:3478?transport=tcp',
-                        credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-                        username: '28224511:1379330808'
-                    },
-                    {
-                        url: 'turn:turn.bistri.com:80',
-                        credential: 'homeo',
-                        username: 'homeo'
-                    },
-                    {
-                        url: 'turn:turn.anyfirewall.com:443?transport=tcp',
-                        credential: 'webrtc',
-                        username: 'webrtc'
-                    }
-                ]
-            }
-        });
 
         //this is for the video
         const myVideo = document.createElement('video');
@@ -107,14 +145,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
         })
 
         socket.on('user-connected', function(userId, user, hostBool, piBool) {
-            console.log("User Connected. Is Host? " + hostBool)
-            if (hostBool) {
-                hostId = userId;
-            }
+            console.log("User Connected. Is Pi? " + piBool)
             idMap[userId] = user
             // connect to user and send username
             var conn = myPeer.connect(userId);
-            conn.send(username)
+            conn.on('open', function () {
+                conn.send(username)
+            })
             var messageHTML =  '<div href="javascript:void(0);" class="list-group-item' + '">';
             messageHTML += '<p class="list-group-item-text">'+ 'A user has joined the chat!' +'</p>';
             messageHTML += '</div>';
@@ -128,43 +165,29 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 const video = document.createElement('video')
                 video.setAttribute("id",userId);
                 call.on('stream', (remoteVideoStream) => {
-                    console.log('Remote Video Stream')
+                    console.log('Remote Video Stream - initial')
                     if (isPi) {
-                        if (hostBool) {
-                            addVideoStream(video, remoteVideoStream, user)
-                        }
+                        addPiStream(video,remoteVideoStream, user)
                     } else {
-                        addVideoStream(video, remoteVideoStream, user)
+                        addRemoteStream(video,remoteVideoStream, user)
                     }
                 })
                 peers[userId] = call;
 
                 call.on('close', () => {
-                    video.remove()
-                    console.log("F2")
+                    video.parentElement.parentElement.remove()
+                    console.log("Remote User Disconnected")
                 });
             }, (err) => {
                 console.error('Failed to get local stream', err);
             });
-            console.log('User Call')
+            console.log("Call from " + user)
 
 
-        })
-
-        socket.on('request-host', function () {
-            if (isHost) {
-                socket.emit('host-response', id)
-            }
-        })
-
-        socket.on('recieve-host', function (idHost) {
-            hostId = id;
         })
 
         socket.on('user-disconnected', userId => {
-            if(peers[userId]) peers[userId].close()
-            const video = document.getElementById(userId);
-            video.remove();
+            if(peers[userId]) peers[userId].close();
         });
 
         socket.on('recieve-message', data => {
@@ -195,50 +218,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 document.getElementById("send-message").click();
             }
         }, false);
-
-        myPeer.on('open', id => {
-            socket.emit('join-room', ROOM_ID, id, username, isHost, isPi);
-            //if not host, request hostID
-            if (!isHost) {
-                socket.emit('host-request')
-            }
-        });
-
-        myPeer.on('connection', function(conn) {
-            conn.on('data', function(remoteUsername) {
-                idMap[conn.peer] = remoteUsername;
-            })
-        })
-
-        myPeer.on('call', function(remoteCall) {
-            console.log('Call Started')
-            remoteCall.answer(myVideoStream);
-            if(!peers[remoteCall.peer]) {
-                getUserMedia({video: true, audio: true}).then((stream) => {
-                    console.log("pain")
-                    if (!isPi) {
-                        const call = myPeer.call(remoteCall.peer, stream);
-                        peers[remoteCall.peer] = call;
-                    }
-                }, (err) => {
-                    console.error('Failed to get local stream', err);
-                });
-            }
-            const video = document.createElement('video')
-            video.setAttribute("id",remoteCall.peer);
-            remoteCall.on('stream', remoteVideoStream => {
-                console.log('Remote Video Stream')
-                console.log(remoteCall.peer)
-                console.log(hostId)
-                if (isPi) {
-                    if (remoteCall.peer == hostId) {
-                        addPiHostStream(video, remoteVideoStream, idMap[remoteCall.peer] + "[Host]")
-                    }
-                } else {
-                    addVideoStream(video, remoteVideoStream)
-                }
-            })
-        });
     }
 
     /*
@@ -279,61 +258,55 @@ document.addEventListener("DOMContentLoaded", function(event) {
     /*
     Adds remote video as well as a username
      */
-    function addVideoStream(video, stream, username) {
+    function addRemoteStream(video, stream, username) {
+        console.log("Remote Video Added")
+        if (stream == null) {
+            return
+        }
+        const video_panel = document.getElementById("remoteVideo")
+        const myUsername = document.getElementById("remoteUsername")
         video.srcObject = stream;
+        video.classList.add("remoteStream")
         video.addEventListener('loadedmetadata', () => {
             video.play()
         });
-        var video_container = document.createElement("div");
-        video_container.classList.add("col-lg-3");
-        video_container.append(video)
-        var userText = document.createElement("div")
-        var text = document.createElement("p")
-        text.append(username)
-        userText.append(text)
-        userText.classList.add("usernameText")
-        video_container.append(userText);
-        videoGrid.append(video_container)
+        myUsername.innerHTML = username;
+        video_panel.append(video);
+        // recalculateLayout();
+    }
+
+    /*
+    Adds remote video as well as a username
+     */
+    function addPiStream(video, stream, username) {
+        console.log("Remote Video Added")
+        if (stream == null) {
+            return
+        }
+        const video_panel = document.getElementById("piRemoteVideo")
+        const myUsername = document.getElementById("remoteUsername")
+        video.srcObject = stream;
+        video.classList.add("remoteStream")
+        video.addEventListener('loadedmetadata', () => {
+            video.play()
+        });
+        myUsername.innerHTML = username;
+        video_panel.append(video);
         // recalculateLayout();
     }
 
     function addLocalStream(video, stream, username) {
+        if (stream == null) {
+            return
+        }
         const video_panel = document.getElementById("video-panel")
+        const myUsername = document.getElementById("myUsername")
         video.srcObject = stream;
         video.addEventListener('loadedmetadata', () => {
             video.play()
         });
-        console.log(videoGrid.id)
-        var video_container = document.createElement("div");
-        video_container.append(video)
-        var userText = document.createElement("div")
-        var text = document.createElement("p")
-        text.append(username)
-        userText.append(text)
-        userText.classList.add("usernameText")
-        video_container.append(userText);
-        video_panel.append(video_container)
-        // recalculateLayout();
-    }
-
-    function addPiHostStream(video, stream, username) {
-        const video_panel = document.getElementById("video-panel")
-        video.srcObject = stream;
-        video.addEventListener('loadedmetadata', () => {
-            video.play()
-        });
-        console.log(videoGrid.id)
-        var video_container = document.createElement("div");
-        video.classList.add("pi-host")
-        video_container.append(video)
-        var userText = document.createElement("div")
-        var text = document.createElement("p")
-        text.append(username)
-        userText.append(text)
-        userText.classList.add("usernameText")
-        video_container.append(userText);
-        video_panel.append(video_container)
-        // recalculateLayout();
+        myUsername.innerHTML = username;
+        video_panel.append(video);
     }
 
     function handleMessage(data) {
