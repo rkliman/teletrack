@@ -123,8 +123,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
             } else {
                 $('#desktop-view').fadeIn('slow')
                 $('#desktop-view').removeAttr('hidden')
-                var link = document.getElementById('robotControl');
-                link.style.visibility = 'hidden';
                 videoGrid = document.getElementById('video-grid');
                 socket.emit('join-room', ROOM_ID, peer_id, username, isHost, isPi);
             }
@@ -237,6 +235,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
     document.getElementById("robot-up").onclick = function () {
         socket.emit('robot-up')
+	console.log('robot-up')
     }
     document.getElementById("robot-down").onclick = function () {
         socket.emit('robot-down')
