@@ -101,8 +101,7 @@ io.on('connection', socket => {
 		serial.write('3');
 	    });
 	    socket.on('robot-up', () => {
-		serial.write('robot-up');
-		console.log('4');
+		serial.write('4');
 	    });
 	    socket.on('robot-down', () => {
 		serial.write('5');
@@ -118,6 +117,12 @@ io.on('connection', socket => {
 	    });
 	    socket.on('laser-down', () => {
 		serial.write('9');
+	    });
+	    socket.on('laser-on', () => {
+		serial.write('l');
+	    });
+	    socket.on('laser-off', () => {
+		serial.write('k');
 	    });
 })
 
