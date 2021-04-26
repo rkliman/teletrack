@@ -252,6 +252,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
     document.getElementById("laser-down").onclick = function () {
         socket.emit('laser-down')
     }
+    document.getElementById("laser").onclick = function() {
+        if(document.getElementById("laser").checked) {
+            socket.emit('laser-on');
+        } else {
+            socket.emit('laser-off');
+        }
+    }
 
 
     /*
