@@ -1,0 +1,119 @@
+<!-- Chat + Robot Controls -->
+<div class="col-sm-3 justify-content-center no-float">
+    <!-- Robot Controls -->
+    <div class="row" id = "robotControl">
+        <div class="col-md mt-2 justify-content-center">
+            <h1>Robot Controls</h1>
+            <div class="row">
+                <div class="container justify-content-center col-md-6 text-center">
+                    <h2>Camera</h2>
+                    <div class="grid-container justify-content-center">
+                        <div class="grid-item"></div>
+                        <div class="grid-item">
+                            <button class="btn btn-primary" type="button" id="increase">
+                                <i class="bi bi-arrow-up"></i>
+                            </button>
+                        </div>
+                        <div class="grid-item"></div>
+                        <div class="grid-item">
+                            <button class="btn btn-primary" type="button" id="">
+                                <i class="bi bi-arrow-left"></i>
+                            </button>
+                        </div>
+                        <div class="grid-item"></div>
+                        <div class="grid-item">
+                            <button class="btn btn-primary" type="button" id="">
+                                <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div class="grid-item"></div>
+                        <div class="grid-item">
+                            <button class="btn btn-primary" type="button" id="decrease">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                        </div>
+                        <div class="grid-item"></div>
+                    </div>
+                </div>
+                <div class="container justify-content-center col-md-6 text-center">
+                    <h2>Arm</h2>
+                    <div class="grid-container col-md-3 justify-content-center">
+                        <div class="grid-item"></div>
+                        <div class="grid-item">
+                            <button class="btn btn-primary" type="button" id="increase">
+                                <i class="bi bi-arrow-up"></i>
+                            </button>
+                        </div>
+                        <div class="grid-item"></div>
+                        <div class="grid-item">
+                            <button class="btn btn-primary" type="button" id="">
+                                <i class="bi bi-arrow-left"></i>
+                            </button>
+                        </div>
+                        <div class="grid-item"></div>
+                        <div class="grid-item">
+                            <button class="btn btn-primary" type="button" id="">
+                                <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div class="grid-item"></div>
+                        <div class="grid-item">
+                            <button class="btn btn-primary" type="button" id="decrease">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                        </div>
+                        <div class="grid-item"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3 text-center">
+                <h3>Rail Movement</h3>
+                <div class="container justify-content-center col-md-6 text-center">
+                    <button class="btn btn-primary" type="button" id="">
+                        <i class="bi bi-arrow-left"></i>
+                        Move Robot Left
+                    </button>
+                </div>
+                <div class="container justify-content-center col-md-6 text-center">
+                    <button class="btn btn-primary" type="button" id="">
+                        Move Robot Right
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row mt-3 ml-4">
+                    <div class="container col-md-11 justify-content-center">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="laser" style="height: 18px; width: 60px; margin-right: 10px">
+                            <label class="form-check-label" for="laser"><h5>Activate Laser</h5></label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <!-- Chat -->
+    <div class="row">
+        <div class="col-lg">
+            <div id="chat" class="">
+                <div id="messages-container ">
+                    <div class="list-group overflow-auto" style="height: 400px;" id="messages"></div>
+                </div>
+                <div id="message-container">
+                    <div class="form-group">
+                        <label class="control-label">Live chat</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="message" id="message" placeholder="Your message here ...">
+                            <span class="input-group-btn">
+                                                <button id="send-message" class="btn btn-success">Send Message</button>
+                                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

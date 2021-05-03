@@ -10,6 +10,7 @@ var https  = require('https');
 var path   = require("path");
 var os     = require('os');
 var ifaces = os.networkInterfaces();
+var SerialPort = require('serialport')
 
 // Public Self-Signed Certificates for HTTPS connection
 var privateKey  = fs.readFileSync('./../certificates/privkey.pem', 'utf8');
@@ -47,48 +48,82 @@ request1.end();
 
 app.set('view engine', 'ejs')
 
+var serial = new SerialPort('/dev/ttyUSB0', {autoOpen: false, baudRate: 115200});
+serial.open(function (err) {
+	if(err) {
+		return console.log('Error opening port: ', err.message)
+	}
+})
+
+serial.on('open', function() {
+	console.log('Serial Open');  
+	});
+
 users = [];
+var numusers = 0;
 io.on('connection', socket => {
 
-    socket.on('join-room', (roomId, userId, username, hostBool) => {
-        var currentdate = new Date();
-        var timestamp = "Last Sync: " + currentdate.getDate() + "/"
-            + (currentdate.getMonth()+1)  + "/"
-            + currentdate.getFullYear() + " @ "
-            + currentdate.getHours() + ":"
-            + currentdate.getMinutes() + ":"
-            + currentdate.getSeconds();
-        console.log(timestamp, roomId, userId);
-        socket.join(roomId);
-        socket.to(roomId).broadcast.emit('user-connected', userId, username, hostBool)
-        socket.on('send-message', function (data) {
-            socket.to(roomId).broadcast.emit('recieve-message', data);
-        })
+    socket.on('join-room', (roomId, userId, username, hostBool, piBool) => {
+        if (true) { //only allow joining if room isn't full
+            var currentdate = new Date();
+            var timestamp = "Last Sync: " + currentdate.getDate() + "/"
+                + (currentdate.getMonth() + 1) + "/"
+                + currentdate.getFullYear() + " @ "
+                + currentdate.getHours() + ":"
+                + currentdate.getMinutes() + ":"
+                + currentdate.getSeconds();
+            console.log(timestamp, roomId, userId, hostBool, piBool);
+            socket.join(roomId);
+            socket.to(roomId).broadcast.emit('user-connected', userId, username, hostBool, piBool)
+            socket.on('send-message', function (data) {
+                socket.to(roomId).broadcast.emit('recieve-message', data);
+            })
 
-        socket.on('disconnect', () => {
-            socket.to(roomId).broadcast.emit('user-disconnected', userId);
-        });
+            socket.on('disconnect', () => {
+                socket.to(roomId).broadcast.emit('user-disconnected', userId);
+            });
+        }
     });
 
     socket.on('enter-menu', function () {
         socket.emit('uuid-sent', uuidV4());
     });
-
-    socket.on('increase', () => {
-        // console.log("increase");
-        if (pulseWidth+100 < 2000) {
-            pulseWidth += 100;
-            motor.servoWrite(pulseWidth);
-        }
-    });
-    socket.on('decrease', () => {
-        // console.log("decrease");
-        if (pulseWidth-100 > 500) {
-            pulseWidth -= 100;
-            motor.servoWrite(pulseWidth);
-            // console.log(pulseWidth);
-        }
-    });
+	    socket.on('track-left', () => {
+		serial.write('0');
+	    });
+	    socket.on('track-right', () => {
+		serial.write('1');
+	    });
+	    socket.on('robot-left', () => {
+		serial.write('2');
+	    });
+	    socket.on('robot-right', () => {
+		serial.write('3');
+	    });
+	    socket.on('robot-up', () => {
+		serial.write('4');
+	    });
+	    socket.on('robot-down', () => {
+		serial.write('5');
+	    });
+	    socket.on('laser-left', () => {
+		serial.write('6');
+	    });
+	    socket.on('laser-right', () => {
+		serial.write('7');
+	    });
+	    socket.on('laser-up', () => {
+		serial.write('8');
+	    });
+	    socket.on('laser-down', () => {
+		serial.write('9');
+	    });
+	    socket.on('laser-on', () => {
+		serial.write('l');
+	    });
+	    socket.on('laser-off', () => {
+		serial.write('k');
+	    });
 })
 
 // Page Definitions
@@ -98,7 +133,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/about', function (req, res) {
-    res.sendFile(path.join(__dirname+'/pages/about.html'));
+    res.sendFile(path.join(__dirname+'/pages/about_new.html'));
 })
 
 app.get('/chat', function (req, res) {
