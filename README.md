@@ -1,35 +1,22 @@
-# videochat-peerjs-example
+# Teletrack telepresence video conferencing
 
-A videochat implementation using PeerJS with Node.js
+This code runs on a raspberry pi and controls a Teletrack telepresence robot. It runs on node.js.
 
-# How to use
+The project was a telepresence robot. It existed in a space to allow a remote user with a screen to view and control the robot. The device was mounted on a ceiling or upper wall-mounted track, which is important because it kept the robot out of the way when not in use. The camera assembly consisted of a camera turret that could rotate. The robot had the capability to move around the track, moving the camera’s point of view. This led to a more natural form of remote human interaction than a traditional webcam setup. All of these motions were controlled by a remote operator via a website, and the video feed from the robot was relayed back to the operator via the internet. As the robot’s range is relatively long as it drives around the track, it has an onboard battery to keep its various components powered. At a few points in the track, or perhaps the whole track, there might have been some sort of charging system to keep the robot’s cell topped off. The whole battery charging system, and indeed the whole robot, was designed for safety and reliability. The goal for the project was to bring a bit more normalcy to the webcam-dominated cyberspace we currently are living in.
 
-Open a terminal and switch to the `videochat-peerjs-example/server` directory and install dependencies executing:
+## Usage
+To use this project, clone this repository into the /home/ directory of the pi and run the following commands:
 
-```batch
-npm install
-```
+`cd ~/teletrack/public`
 
-Then switch to the `videochat-peerjs-example/public` directory and install dependencies executing:
+`node webserver.js`
 
-```batch
-npm install
-```
+open a new window,
 
-Once the dependencies were installed, start with the terminal the website server by switching to the `videochat-peerjs-example/public` directory and executing:
+`cd ~/teletrack/server`
 
-```batch
-node website-server.js
-```
+`node peer_server.js`
 
-Let that terminal open and open a new one. Switch to the `videochat-peerjs-example/server` directory and start the PeerJS server executing:
+Make sure that the IP here in /public/source/js/chat.js is changed to your IP.
 
-```batch
-node peer-server.js
-```
-
-Open your browser and access the addres: [title](https://localhost:8443) and have fun. For more information, please visit the article of this [example here in Our Code World](http://ourcodeworld.com/articles/read/496/how-to-create-a-videochat-with-webrtc-using-peerjs-and-node-js)
-
-# Important
-
-Don't forget to change the host address [at the line 16](https://github.com/ourcodeworld/videochat-peerjs-example/blob/master/public/source/js/script.js#L16) in `videochat-peerjs-example/public/source/js/scripts.js` according to yours.
+![image](https://user-images.githubusercontent.com/67759534/116907068-131bad80-ac0f-11eb-8564-0117ef6a698d.png)
