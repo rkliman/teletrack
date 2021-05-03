@@ -20,3 +20,12 @@ open a new window,
 Make sure that the IP here in /public/source/js/chat.js is changed to your IP.
 
 ![image](https://user-images.githubusercontent.com/67759534/116907068-131bad80-ac0f-11eb-8564-0117ef6a698d.png)
+
+## Contributors
+Larry Kresse
+Randall Kliman
+Eunsan Mo
+Ian Graham
+
+## Further reading
+A full report of the project can be found on this website: https://eceseniordesign2021spring.ece.gatech.edu/sd21p41/
