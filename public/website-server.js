@@ -2,7 +2,7 @@
  * This script starts a https server accessible at https://localhost:8443
  * to test the chat
  *
- * @author Carlos Delgado
+ * @author Randall Kliman
  */
 var fs     = require('fs');
 var http   = require('http');
